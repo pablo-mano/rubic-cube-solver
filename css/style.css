@@ -69,9 +69,17 @@ body { min-height: 100vh; min-height: 100dvh; }
 section { margin-bottom: 18px; }
 
 /* ---------- preview ---------- */
-.preview-section { display: flex; justify-content: center; }
+.preview-section {
+  display: flex; justify-content: center; align-items: center;
+  /* Reserve a bounded box so the 3D-projected cube can't push other content. */
+  height: min(45vw, 180px);
+  overflow: visible;
+}
 .cube3d-stage {
-  width: 220px; height: 220px;
+  /* Inner size is smaller than the reserved height; the face translateZ
+     pushes corners outward in perspective so we keep the inner box small. */
+  width: min(32vw, 130px);
+  height: min(32vw, 130px);
   perspective: 800px;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
@@ -242,5 +250,4 @@ dialog form { margin-top: 14px; text-align: right; }
 
 @media (max-width: 380px) {
   .palette .swatch { width: 30px; height: 30px; }
-  .cube3d-stage { width: 190px; height: 190px; }
 }

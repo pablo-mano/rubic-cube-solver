@@ -18,16 +18,12 @@
     cube.className = 'cube3d';
     stage.appendChild(cube);
 
-    const size = stage.clientWidth || 220;
-    const half = size / 2;
-
-    // Build 6 face elements
+    // Build 6 face elements (size-dependent transforms get set in layout()).
     const faceEls = {};
     for (const face of FACES) {
       const fEl = document.createElement('div');
       fEl.className = 'face3d';
       fEl.dataset.face = face;
-      // 9 sticker squares
       for (let i = 0; i < 9; i++) {
         const s = document.createElement('div');
         s.className = 'sticker3d';
@@ -37,19 +33,20 @@
       faceEls[face] = fEl;
     }
 
-    // Position faces in 3D
-    // The cube occupies a box of side `size`, centered at origin of stage's
-    // transform space. Each face is translated by ±half along its normal,
-    // then rotated to face outward.
-    function setFaceTransform(face, transform) {
-      faceEls[face].style.transform = transform;
+    function layout() {
+      const size = stage.clientWidth || stage.getBoundingClientRect().width || 130;
+      const half = size / 2;
+      faceEls.U.style.transform = `rotateX(90deg)  translateZ(${half}px)`;
+      faceEls.D.style.transform = `rotateX(-90deg) translateZ(${half}px)`;
+      faceEls.F.style.transform = `rotateY(0deg)   translateZ(${half}px)`;
+      faceEls.B.style.transform = `rotateY(180deg) translateZ(${half}px)`;
+      faceEls.L.style.transform = `rotateY(-90deg) translateZ(${half}px)`;
+      faceEls.R.style.transform = `rotateY(90deg)  translateZ(${half}px)`;
     }
-    setFaceTransform('U', `rotateX(90deg)  translateZ(${half}px)`);
-    setFaceTransform('D', `rotateX(-90deg) translateZ(${half}px)`);
-    setFaceTransform('F', `rotateY(0deg)   translateZ(${half}px)`);
-    setFaceTransform('B', `rotateY(180deg) translateZ(${half}px)`);
-    setFaceTransform('L', `rotateY(-90deg) translateZ(${half}px)`);
-    setFaceTransform('R', `rotateY(90deg)  translateZ(${half}px)`);
+    // Run after the current layout pass so clientWidth reflects CSS sizing.
+    requestAnimationFrame(layout);
+    window.addEventListener('resize', layout);
+    window.addEventListener('orientationchange', layout);
 
     // For each face the inner 3x3 grid is naturally drawn "from the outside" thanks
     // to the rotateY/rotateX above. BUT the sticker order needs to match the
