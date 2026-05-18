@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Cube Solver self-test</title>
+<style>body{font-family:-apple-system,sans-serif;background:#111;color:#eee;padding:16px;}
+.ok{color:#5cb85c}.bad{color:#e55}pre{white-space:pre-wrap;font-size:13px}</style></head>
+<body>
+<h1>Self-test</h1>
+<pre id="out">Running…</pre>
+<script src="../vendor/cube.js"></script>
+<script src="../js/cube-state.js"></script>
+<script src="../js/moves.js"></script>
+<script src="../js/solver-kociemba.js"></script>
+<script src="../js/solver-beginner.js"></script>
+<script>
+const out = document.getElementById('out');
+function log(msg, ok) {
+  const span = document.createElement('span');
+  span.className = ok === true ? 'ok' : ok === false ? 'bad' : '';
+  span.textContent = (ok === true ? 'OK  ' : ok === false ? 'FAIL ' : '') + msg + '\n';
+  out.appendChild(span);
+}
+out.textContent = '';
+(async function(){
+  try {
+    log('starting…');
+    const solved = CubeState.solved();
+    log('solved string: ' + solved.join('').slice(0,18) + '…');
+
+    const scr = "R U R' U' R U2 R' U F R U R' U' F'";
+    const s1 = Moves.applySequence(solved, scr);
+    const s2 = Moves.applySequence(s1, Moves.inverse(scr));
+    log('scramble + inverse = solved', s2.join('') === solved.join(''));
+
+    log('initializing Kociemba solver (may take 1-2s)…');
+    await SolverKociemba.ensureSolver();
+    log('solver ready', true);
+
+    for (let i = 0; i < 3; i++) {
+      const state = Moves.applySequence(solved, Moves.randomScramble(20));
+      const res = await SolverKociemba.solve(state);
+      const after = Moves.applySequence(state, res.moves.join(' '));
+      log(`trial ${i}: ${res.moves.length}-move Kociemba solve`, after.join('') === solved.join(''));
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const state = Moves.applySequence(solved, Moves.randomScramble(20));
+      const res = await SolverBeginner.solve(state);
+      const after = Moves.applySequence(state, res.moves.join(' '));
+      log(`trial ${i}: ${res.moves.length}-move step-by-step solve, ${res.stepBoundaries.length} phase markers`,
+          after.join('') === solved.join(''));
+    }
+
+    log('done');
+  } catch (e) {
+    log('ERROR: ' + (e.message || e), false);
+  }
+})();
+</script>
+</body></html>

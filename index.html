@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Rubik's Cube Solver</title>
+
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cube Solver">
+<meta name="description" content="Solve a 3x3x3 Rubik's cube by entering its colors. Works offline, installable to Home Screen.">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header class="app-header">
+    <h1>Cube Solver</h1>
+    <button id="help-btn" class="icon-btn" aria-label="Help">?</button>
+  </header>
+
+  <section class="preview-section">
+    <div id="cube3d-stage" class="cube3d-stage" aria-label="3D cube preview"></div>
+  </section>
+
+  <section class="net-section">
+    <div class="mode-row">
+      <div class="seg-control" role="tablist" aria-label="Color input mode">
+        <button class="seg-btn active" data-mode="paint" role="tab" aria-selected="true">Paint</button>
+        <button class="seg-btn" data-mode="cycle" role="tab" aria-selected="false">Tap-cycle</button>
+      </div>
+    </div>
+
+    <div id="palette" class="palette" aria-label="Color palette">
+      <!-- color swatches injected by JS -->
+    </div>
+
+    <div id="net" class="net" aria-label="Cube net (unfolded)">
+      <!-- 6 faces injected by JS -->
+    </div>
+
+    <div class="action-row">
+      <button id="btn-reset" class="btn">Reset</button>
+      <button id="btn-clear" class="btn">Clear</button>
+      <button id="btn-scramble" class="btn">Scramble</button>
+    </div>
+  </section>
+
+  <section class="solve-section">
+    <div class="mode-row">
+      <div class="seg-control" role="tablist" aria-label="Solver mode">
+        <button class="seg-btn active" data-solver="kociemba" role="tab" aria-selected="true">Compact (~20 moves)</button>
+        <button class="seg-btn" data-solver="beginner" role="tab" aria-selected="false">Step-by-step</button>
+      </div>
+    </div>
+
+    <button id="btn-solve" class="btn btn-primary">Solve</button>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+
+    <div id="solution" class="solution" hidden>
+      <div id="solution-meta" class="solution-meta"></div>
+      <div id="step-label" class="step-label"></div>
+      <div id="moves" class="moves" aria-label="Solution moves"></div>
+      <div class="player-controls">
+        <button id="btn-first" class="icon-btn" aria-label="First move">⏮</button>
+        <button id="btn-prev"  class="icon-btn" aria-label="Previous move">◀</button>
+        <button id="btn-play"  class="icon-btn" aria-label="Play / pause">▶</button>
+        <button id="btn-next"  class="icon-btn" aria-label="Next move">▶▶</button>
+        <button id="btn-last"  class="icon-btn" aria-label="Last move">⏭</button>
+        <label class="speed">
+          <span aria-hidden="true">⏱</span>
+          <input id="speed" type="range" min="200" max="1500" step="100" value="600" aria-label="Animation speed">
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="help-dialog">
+    <h2>How to use</h2>
+    <ol>
+      <li>Hold your cube with <b>white on top</b> and <b>green facing you</b>.</li>
+      <li>In <b>Paint</b> mode, tap a color in the palette then tap stickers to fill. In <b>Tap-cycle</b> mode, tap a sticker repeatedly to cycle colors.</li>
+      <li>Center stickers are fixed (they define each face's color).</li>
+      <li>Tap <b>Solve</b>. <b>Compact</b> finds a ~20-move solution. <b>Step-by-step</b> finds the same solution but splits it into smaller phases so you can apply a few moves at a time and double-check your cube.</li>
+      <li>Use the playback controls to step through the moves.</li>
+    </ol>
+    <h3>Move notation</h3>
+    <p>Letters = face turns (<b>U</b>p, <b>D</b>own, <b>L</b>eft, <b>R</b>ight, <b>F</b>ront, <b>B</b>ack). A prime mark (<b>'</b>) means counter-clockwise. <b>2</b> means 180°.</p>
+    <h3>Install to Home Screen</h3>
+    <p>In iOS Safari, tap the <b>Share</b> button and choose <b>Add to Home Screen</b>. The app then runs full-screen and works offline.</p>
+    <form method="dialog"><button class="btn btn-primary">Close</button></form>
+  </dialog>
+</div>
+
+<script src="vendor/cube.js"></script>
+<script src="js/cube-state.js"></script>
+<script src="js/moves.js"></script>
+<script src="js/net-view.js"></script>
+<script src="js/cube-3d.js"></script>
+<script src="js/solver-kociemba.js"></script>
+<script src="js/solver-beginner.js"></script>
+<script src="js/solution-player.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
