@@ -44,6 +44,7 @@ body { min-height: 100vh; min-height: 100dvh; }
   margin-bottom: 10px;
 }
 .app-header h1 { font-size: 1.2rem; margin: 0; font-weight: 600; letter-spacing: 0.3px; }
+.app-header h1 .version { font-size: 0.7rem; color: var(--fg-dim); font-weight: 400; margin-left: 4px; }
 
 .icon-btn {
   background: var(--bg-elev); color: var(--fg);
@@ -71,16 +72,13 @@ section { margin-bottom: 18px; }
 /* ---------- preview ---------- */
 .preview-section {
   display: flex; justify-content: center; align-items: center;
-  /* Reserve a bounded box so the 3D-projected cube can't push other content. */
-  height: min(45vw, 180px);
-  overflow: visible;
+  height: 150px; max-height: 38vw;
+  overflow: hidden;
 }
 .cube3d-stage {
-  /* Inner size is smaller than the reserved height; the face translateZ
-     pushes corners outward in perspective so we keep the inner box small. */
-  width: min(32vw, 130px);
-  height: min(32vw, 130px);
-  perspective: 800px;
+  width: 110px; max-width: 28vw;
+  height: 110px; max-height: 28vw;
+  perspective: 600px;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
 }
