@@ -1,5 +1,5 @@
 // Cache-first service worker so the PWA works offline once installed.
-const CACHE = 'cube-solver-v1';
+const CACHE = 'cube-solver-v2';
 const ASSETS = [
   './',
   'index.html',
