@@ -134,8 +134,8 @@
     if (!v.ok) { setStatus(v.reason, true); return; }
 
     initialStateForPlayback = state.slice();
-    setStatus(solverMode === 'kociemba' && !window.SolverKociemba.isInitialized()
-      ? 'Initializing solver (one-time, ~1–2s)…'
+    setStatus(!window.SolverKociemba.isInitialized()
+      ? 'Preparing solver… This can take longer on phones. Keep this page open.'
       : 'Solving…');
     $('btn-solve').disabled = true;
     try {
