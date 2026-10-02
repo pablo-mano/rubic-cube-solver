@@ -37,19 +37,22 @@
   function build({ onApply }) {
     const $ = id => document.getElementById(id);
     const dialog = $('scan-dialog'), video = $('scan-video');
-    let stream = null, generation = 0, samples = Array(6).fill(null), colors = null;
+    let stream = null, generation = 0, samples = Array(6).fill(null), colors = null, readyColors = null, reviewVersion = 0;
     function message(text) { $('scan-status').textContent = text; }
     function stop() {
       generation++;
+      reviewVersion++; readyColors = null;
       if (stream) stream.getTracks().forEach(track => track.stop());
       stream = null; video.srcObject = null; $('scan-capture').disabled = true;
     }
     function guide() {
       const face = $('scan-face').value;
-      $('scan-guide').textContent = `Face ${FACES.indexOf(face) + 1}/6: ${NAMES[face]} center facing the camera, ${TOP[face]} center on the top adjacent face. Rotate the whole cube; do not turn individual layers.`;
+      $('scan-guide').textContent = `Face ${FACES.indexOf(face) + 1}/6: ${NAMES[face]} center facing the camera, any rotation is OK. For manual alignment, keep the ${TOP[face]} center on the top adjacent face. Rotate the whole cube; do not turn individual layers.`;
       $('scan-capture').textContent = samples[FACES.indexOf(face)] ? 'Retake face' : 'Capture face';
     }
-    function review() {
+    async function review() {
+      const version = ++reviewVersion;
+      readyColors = null; $('scan-apply').disabled = true; $('scan-confirm-orientation').hidden = true;
       const root = $('scan-review'); root.replaceChildren();
       if (!colors) return;
       FACES.forEach((face, f) => {
@@ -66,11 +69,37 @@
           });
           grid.appendChild(button);
         }
-        group.appendChild(grid); root.appendChild(group);
+        group.appendChild(grid);
+        const rotate = document.createElement('button');
+        rotate.className = 'btn'; rotate.textContent = 'Rotate ↻';
+        rotate.setAttribute('aria-label', `Rotate ${NAMES[face]} face clockwise`);
+        rotate.addEventListener('click', () => {
+          colors.splice(f * 9, 9, ...global.ScanOrientation.rotateFace(colors.slice(f * 9, f * 9 + 9)));
+          review();
+        });
+        group.appendChild(rotate); root.appendChild(group);
       });
       const validity = global.CubeState.validate(colors);
-      $('scan-apply').disabled = !validity.ok;
-      message(validity.ok ? 'All faces captured. Check the colors, then use this scan. You can retake any face or tap a sticker to correct it.' : `${validity.reason} Tap review stickers to correct colors, or retake a face.`);
+      if (!validity.ok) { message(`${validity.reason} Correct colors or retake a face.`); return; }
+      message('Matching face rotations and checking edge and corner connections…');
+      const result = await global.ScanOrientation.resolve(colors.slice(), () => version !== reviewVersion);
+      if (version !== reviewVersion || !dialog.open) return;
+      if (result.kind === 'unique') {
+        colors = result.state.slice();
+        root.querySelectorAll('.scan-colors .sticker').forEach((button, index) => {
+          button.dataset.color = colors[index];
+          button.textContent = colors[index];
+          button.setAttribute('aria-label', `${NAMES[FACES[Math.floor(index / 9)]]} face sticker ${index % 9 + 1}: ${NAMES[colors[index]]}`);
+        });
+        readyColors = result.state;
+        $('scan-apply').disabled = false;
+        message('Face orientations matched. Edge and corner connections are valid. Check the detected colors, then use this scan.');
+      } else if (result.kind === 'ambiguous') {
+        $('scan-confirm-orientation').hidden = !global.ScanOrientation.isPhysical(colors);
+        message('More than one valid cube matches these scans. Use Rotate below each face to align it with the top-center guide, then confirm the shown orientation. Do not guess: different valid arrangements need different solutions.');
+      } else {
+        message('No valid cube matches these face rotations. Check detected colors and face centers, or retake faces. Keep the cube layers unchanged between captures.');
+      }
     }
     async function open() {
       stop(); const request = generation;
@@ -87,7 +116,7 @@
         stream = camera; video.srcObject = stream; await video.play();
         if (request !== generation || !dialog.open) return;
         $('scan-capture').disabled = false;
-        message('Align one face inside the grid, with each sticker centered in a cell. Capture all six faces in the indicated orientation.');
+        message('Align one face inside the grid, with each sticker centered in a cell. Capture all six faces; face rotations will be matched automatically.');
       } catch (error) {
         if (request !== generation) return;
         stop();
@@ -113,9 +142,14 @@
         guide();
       } catch (error) { message(error.message); }
     });
+    $('scan-confirm-orientation').addEventListener('click', () => {
+      if (!colors || !global.ScanOrientation.isPhysical(colors)) return;
+      readyColors = colors.slice(); $('scan-apply').disabled = false;
+      message('Shown orientation confirmed. Use scan only if each face matches the top-center guide.');
+    });
     $('scan-apply').addEventListener('click', () => {
-      if (!colors || !global.CubeState.validate(colors).ok) return;
-      onApply(colors.slice()); stop(); dialog.close();
+      if (!readyColors) return;
+      onApply(readyColors.slice()); stop(); dialog.close();
     });
   }
   global.CameraScan = { classify, sampleFrame, build };
