@@ -81,12 +81,9 @@
     }
 
     function apply() {
-      const state = getInitialState().slice();
-      for (let i = 0; i < cursor; i++) {
-        try { global.Moves.applyMove(state, moves[i]); } catch (_) { /* ignore bad move */ }
-      }
-      // Re-apply via Moves' batched method for accuracy
-      // (the above is incremental which is fine)
+      const state = global.Moves.applySequence(
+        getInitialState(), moves.slice(0, cursor).join(' ')
+      );
       onMoveApply(state, cursor);
     }
 

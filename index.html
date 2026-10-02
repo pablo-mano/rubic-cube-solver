@@ -51,6 +51,7 @@
       <button id="btn-clear" class="btn">Clear</button>
       <button id="btn-scramble" class="btn">Scramble</button>
     </div>
+    <div class="action-row"><button id="btn-scan" class="btn">Scan with camera</button></div>
   </section>
 
   <section class="solve-section">
@@ -83,12 +84,36 @@
     </div>
   </section>
 
+  <dialog id="scan-dialog" aria-labelledby="scan-title">
+    <h2 id="scan-title">Scan your cube</h2>
+    <p>Use a standard white/yellow, red/orange, green/blue cube. Keep lighting even. Camera images stay on this device.</p>
+    <label for="scan-face">Face to capture</label>
+    <select id="scan-face">
+      <option value="U">White (U)</option><option value="R">Red (R)</option>
+      <option value="F">Green (F)</option><option value="D">Yellow (D)</option>
+      <option value="L">Orange (L)</option><option value="B">Blue (B)</option>
+    </select>
+    <p id="scan-guide"></p>
+    <div class="scan-camera">
+      <video id="scan-video" autoplay muted playsinline aria-label="Camera preview"></video>
+      <div class="scan-overlay" aria-hidden="true"></div>
+    </div>
+    <p id="scan-status" role="status" aria-live="polite"></p>
+    <button id="scan-capture" class="btn" disabled>Capture face</button>
+    <div id="scan-review"></div>
+    <div class="action-row">
+      <button id="scan-close" class="btn">Cancel</button>
+      <button id="scan-apply" class="btn btn-primary" disabled>Use scan</button>
+    </div>
+  </dialog>
+
   <dialog id="help-dialog">
     <h2>How to use</h2>
     <ol>
       <li>Hold your cube with <b>white on top</b> and <b>green facing you</b>.</li>
       <li>In <b>Paint</b> mode, tap a color in the palette then tap stickers to fill. In <b>Tap-cycle</b> mode, tap a sticker repeatedly to cycle colors.</li>
       <li>Center stickers are fixed (they define each face's color).</li>
+      <li>For camera input, tap <b>Scan with camera</b>, align each face in the grid, and follow the center-color orientation guide. Capture all six faces without turning layers. Check the detected colors and tap stickers to correct them before choosing <b>Use scan</b>. Camera access requires HTTPS or localhost; images are processed on your device.</li>
       <li>Tap <b>Solve</b>. <b>Compact</b> finds a ~20-move solution. <b>Step-by-step</b> finds the same solution but splits it into smaller phases so you can apply a few moves at a time and double-check your cube.</li>
       <li>Use the playback controls to step through the moves.</li>
     </ol>
@@ -108,6 +133,7 @@
 <script src="js/solver-kociemba.js"></script>
 <script src="js/solver-beginner.js"></script>
 <script src="js/solution-player.js"></script>
+<script src="js/camera-scan.js"></script>
 <script src="js/app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

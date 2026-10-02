@@ -59,6 +59,13 @@
     getInitialState: () => initialStateForPlayback,
   });
   let initialStateForPlayback = state.slice();
+  window.CameraScan.build({ onApply: (scanned) => {
+    state = scanned;
+    cube3d.render(state);
+    netView.render(state);
+    hideSolution();
+    setStatus('Scan applied — review the colors, then tap Solve.');
+  } });
 
   // ---- input mode segmented control ----
   document.querySelectorAll('.seg-btn[data-mode]').forEach((btn) => {

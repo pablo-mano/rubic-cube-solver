@@ -2,7 +2,7 @@
 // always reach the user; falls back to the cache when the network is unavailable
 // (e.g. when the app is launched offline from the Home Screen). On every
 // successful fetch we update the cache so the offline copy stays fresh.
-const CACHE = 'cube-solver-v3';
+const CACHE = 'cube-solver-v4';
 const ASSETS = [
   './',
   'index.html',
@@ -16,6 +16,7 @@ const ASSETS = [
   'js/solver-kociemba.js',
   'js/solver-beginner.js',
   'js/solution-player.js',
+  'js/camera-scan.js',
   'vendor/cube.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
